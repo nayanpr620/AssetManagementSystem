@@ -10,7 +10,7 @@ Handles inference for aerial/satellite/drone imagery using:
   6. HSV Color Segmentation: Water, Parks, Drains (fallback)
 """
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from PIL import Image
 from ultralytics import YOLO
