@@ -149,7 +149,7 @@ class StreamProcessor:
 
             # Draw mask polygon if available
             if det.get("mask_polygon") and len(det["mask_polygon"]) > 2:
-                pts = np.array(det["mask_polygon"], dtype=np.int32)
+                pts = np.array(det["mask_polygon"], dtype=np.int32).reshape((-1, 1, 2))
                 overlay = annotated.copy()
                 cv2.fillPoly(overlay, [pts], color)
                 cv2.addWeighted(overlay, 0.25, annotated, 0.75, 0, annotated)
