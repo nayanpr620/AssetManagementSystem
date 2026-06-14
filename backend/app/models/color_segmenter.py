@@ -23,9 +23,10 @@ from app.utils.geo_utils import build_precise_geometry
 COLOR_PROFILES = {
     "Trees & Green Cover": {
         "ranges": [
-            (30, 45, 45, 85, 255, 220),   # Raised saturation & value to avoid dark/desaturated gravel shadows
+            (30, 45, 45, 85, 255, 220),   # Greens with raised sat/val to avoid dark shadows
+            (35, 50, 40, 80, 255, 180),   # Darker greens
         ],
-        "min_area": 300,       # Smaller to catch vegetation patches
+        "min_area": 400,      # Small tree clusters
         "color": "#2ECC71",
     },
     "Water Bodies": {
@@ -35,6 +36,16 @@ COLOR_PROFILES = {
         ],
         "min_area": 800,      # Water bodies
         "color": "#3498DB",
+        "require_smooth": True, # Water should have very few internal edges compared to tracks
+    },
+    "Railway Tracks": {
+        "ranges": [
+            (0, 0, 50, 180, 40, 200),      # Metallic Grey / Steel 
+            (10, 10, 50, 30, 80, 150),     # Brownish rust on tracks
+        ],
+        "min_area": 200,      
+        "color": "#95A5A6",
+        "require_lines": True, # CRITICAL: Validate with Hough Lines to avoid detecting random roads/land
     },
 }
 
@@ -119,6 +130,30 @@ class ColorSegmenter:
                 # Normalized polygon for segmentation mask
                 points = approx.reshape(-1, 2)
                 mask_polygon = points.tolist()
+
+                # --- STRUCTURAL VALIDATION ---
+                y1_i, y2_i = int(y), int(y + bh)
+                x1_i, x2_i = int(x), int(x + bw)
+                
+                # Check line density for tracks vs water
+                if profile.get("require_lines") or profile.get("require_smooth"):
+                    roi_bgr = img_bgr[y1_i:y2_i, x1_i:x2_i]
+                    roi_gray = cv2.cvtColor(roi_bgr, cv2.COLOR_BGR2GRAY)
+                    # Use Canny edge detection
+                    edges = cv2.Canny(roi_gray, 50, 150, apertureSize=3)
+                    
+                    if profile.get("require_lines"):
+                        # Railway tracks must have long straight lines (rails)
+                        min_line_len = max(20, min(bw, bh) * 0.3)
+                        lines = cv2.HoughLinesP(edges, 1, np.pi / 180, 30, minLineLength=min_line_len, maxLineGap=10)
+                        if lines is None or len(lines) < 2:
+                            continue  # Reject: No straight parallel rails found
+                            
+                    if profile.get("require_smooth"):
+                        # Water bodies shouldn't have dense structured edges (unlike tracks)
+                        edge_density = np.sum(edges > 0) / (bw * bh)
+                        if edge_density > 0.05:  # Too many edges, probably a building or steel track
+                            continue
 
                 # Geo conversion
                 geo_bbox, geo_polygon, geo_area_sqm = build_precise_geometry(

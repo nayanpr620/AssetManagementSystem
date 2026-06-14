@@ -358,6 +358,7 @@ class AssetDetector:
         # ML models for trees/roads were trained on ground-level data, not aerial,
         # so HSV color analysis is essential for satellite imagery detection.
         self.hsv_categories = [
+            "Railway Tracks",
             "Water Bodies",
             "Trees & Green Cover",
         ]
