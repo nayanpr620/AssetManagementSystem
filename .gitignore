@@ -26,6 +26,7 @@ venv.bak/
 
 # Backend specifics
 backend/models/*.pt
+!backend/models/railways.pt
 backend/uploads/
 backend/results/
 !backend/models/download_models.py

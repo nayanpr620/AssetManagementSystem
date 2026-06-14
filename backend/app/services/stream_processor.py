@@ -172,7 +172,7 @@ class StreamProcessor:
         cv2.putText(frame, f"FPS: {self.fps}", (10, 28), font, 0.6, fps_color, 2, cv2.LINE_AA)
 
         # Title (center)
-        title = "SPATIAL ASSET INTELLIGENCE - LIVE"
+        title = "RAILWAY INFRASTRUCTURE INTELLIGENCE - LIVE"
         (tw, _), _ = cv2.getTextSize(title, font, 0.5, 1)
         cv2.putText(frame, title, ((w - tw) // 2, 28), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
 

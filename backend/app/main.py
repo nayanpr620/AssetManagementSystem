@@ -25,8 +25,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Spatial Asset Management API",
-    description="AI-powered urban asset detection from aerial/satellite/drone imagery",
+    title="Railway Infrastructure API",
+    description="AI-powered railway asset detection from aerial/satellite/drone imagery",
     version="1.0.0",
     lifespan=lifespan,
 )

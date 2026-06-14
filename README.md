@@ -1,4 +1,4 @@
-# Spatial Asset Management System
+# Railway Intelligence Platform
 
 > A full-stack spatial intelligence platform for aerial, satellite, and drone imagery that combines computer vision, geospatial reasoning, reporting, export pipelines, live monitoring, temporal comparison, and civic-system handoff.
 
@@ -88,15 +88,15 @@ If you want the long version, this document covers the entire ecosystem in depth
 
 ## 3. Executive Summary
 
-The Spatial Asset Management System is a domain-specific urban intelligence platform built around one simple idea:
+The Railway Intelligence Platform is a domain-specific railway intelligence platform built around one simple idea:
 
-**convert raw overhead imagery into structured, reviewable, exportable, and actionable urban asset intelligence.**
+**convert raw overhead imagery into structured, reviewable, exportable, and actionable railway asset intelligence.**
 
 The repository currently contains:
 
 - A FastAPI backend for ingestion, inference, export, change detection, height estimation, report generation, live stream processing, and DIGIT-style asset registry handoff.
 - A React + Vite frontend that provides a modern dashboard shell, focused review pages, GIS exploration, operator controls, reporting, and live monitoring.
-- ML and CV utilities that combine multiple YOLO models with HSV-based land-cover segmentation to cover a broad urban asset taxonomy.
+- ML and CV utilities that combine multiple YOLO models with HSV-based land-cover segmentation to cover a broad railway asset taxonomy.
 - Dockerized deployment for full-stack local or containerized execution.
 - Optional Redis + Celery infrastructure scaffolding for asynchronous workloads.
 - Optional S3-backed storage with a graceful fallback to local filesystem storage.
@@ -123,7 +123,7 @@ The codebase is structured to support the full journey:
 
 ## 4. Product Vision
 
-The long-term vision behind this platform is to act as a spatial decision-support system for urban governance, infrastructure inspection, planning, and operational review.
+The long-term vision behind this platform is to act as a spatial decision-support system for railway operations, infrastructure inspection, planning, and operational review.
 
 At a high level, the product aims to bridge several traditionally disconnected layers:
 
@@ -159,9 +159,9 @@ The system favors:
 - graceful degradation over hard failure when geospatial data is unavailable,
 - extensibility over hard-coded single-purpose logic.
 
-### 4.3 What “Spatial Asset Management” Means Here
+### 4.3 What “Railway Intelligence Platform” Means Here
 
-In this repository, “spatial asset management” includes:
+In this repository, “railway asset management” includes:
 
 - building and property footprint interpretation,
 - green cover and open-space observation,
@@ -178,7 +178,7 @@ This scope makes the system relevant for:
 - utilities,
 - infrastructure planning teams,
 - GIS specialists,
-- urban analytics groups,
+- railway analytics groups,
 - survey review teams,
 - internal innovation or civic-tech units.
 
@@ -186,7 +186,7 @@ This scope makes the system relevant for:
 
 ## 5. Problem Statement
 
-Urban and infrastructure teams increasingly have access to imagery from:
+Railway and infrastructure teams increasingly have access to imagery from:
 
 - satellites,
 - drones,
@@ -352,7 +352,7 @@ What they use most:
 - Shapefile export,
 - summary metadata.
 
-### 7.2 Urban Operations Reviewer
+### 7.2 Railway Operations Reviewer
 
 The operations reviewer cares about:
 
@@ -961,7 +961,7 @@ It behaves like a hybrid orchestration layer across multiple specialized detecto
 
 ### 18.1 Why the Detector Is Hybrid
 
-Urban overhead imagery is messy.
+Railway overhead imagery is messy.
 
 No single off-the-shelf model cleanly handles:
 
@@ -3361,7 +3361,7 @@ Possible roadmap directions include:
 
 No.
 
-The system is designed around a broader urban asset taxonomy including buildings, trees, parks, water, roads, drains, vehicles, and waste.
+The system is designed around a broader railway asset taxonomy including buildings, trees, parks, water, roads, drains, vehicles, and waste.
 
 ### 48.2 Does it require GeoTIFF input?
 
@@ -3417,7 +3417,7 @@ Yes, if you supply the appropriate environment variables and bucket configuratio
 
 | Term | Meaning in This Repo |
 |---|---|
-| Asset | A detected urban feature such as a building, road, tree cluster, or waste area |
+| Asset | A detected railway feature such as a building, road, tree cluster, or waste area |
 | Bounding box | Rectangular extent around a detection |
 | Mask polygon | Segmentation outline returned by a model or CV contour |
 | Geo transform | Simplified mapping from image extent to geographic extent |

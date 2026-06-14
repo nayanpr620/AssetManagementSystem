@@ -98,7 +98,7 @@ export default function ImageUploader() {
 
             <div className="space-y-2">
               <h3 className="text-3xl font-semibold tracking-[-0.05em] text-slate-950">
-                {isDragActive ? 'Drop your scene to begin the scan.' : 'Bring in your next satellite or drone capture.'}
+                {isDragActive ? 'Drop your scene to begin the scan.' : 'Bring in your next track survey, station layout, or drone imagery.'}
               </h3>
               <p className="max-w-2xl text-sm leading-7 text-slate-600">
                 Upload a still image and step directly into premium visual review, GIS-ready exports, 3D height estimation, civic reporting, and registry handoff.

@@ -11,6 +11,9 @@ export const CATEGORY_COLORS = {
   'Drains & Sewage':        '#8E44AD',
   'Vehicles & Parking':     '#F39C12',
   'Waste Dumps':            '#D35400',
+  'Railway Tracks':         '#E67E22',
+  'Station Platforms':      '#8E44AD',
+  'Trains & Rolling Stock': '#C0392B',
 };
 
 export const CATEGORY_LABELS = {
@@ -22,6 +25,9 @@ export const CATEGORY_LABELS = {
   'Drains & Sewage':        '🚿 Drains',
   'Vehicles & Parking':     '🚗 Vehicles',
   'Waste Dumps':            '🗑️ Waste',
+  'Railway Tracks':         '🛤️ Tracks',
+  'Station Platforms':      '🚉 Platforms',
+  'Trains & Rolling Stock': '🚆 Trains',
 };
 
 export const CATEGORY_ICONS = {
@@ -33,6 +39,9 @@ export const CATEGORY_ICONS = {
   'Drains & Sewage':        '🚿',
   'Vehicles & Parking':     '🚗',
   'Waste Dumps':            '🗑️',
+  'Railway Tracks':         '🛤️',
+  'Station Platforms':      '🚉',
+  'Trains & Rolling Stock': '🚆',
 };
 
 /**

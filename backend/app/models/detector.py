@@ -48,15 +48,22 @@ VEHICLE_MAP = {
     2: "Vehicles & Parking",   # car
     3: "Vehicles & Parking",   # motorcycle
     5: "Vehicles & Parking",   # bus
+    6: "Trains & Rolling Stock", # train (COCO class 6)
     7: "Vehicles & Parking",   # truck
 }
 
-# 6. Land Cover (from Colab training, if available)
+# 6. Land Cover (from Colab training — overrides Trees, Parks, Water, Roads if present)
 LANDCOVER_MAP = {
     0: "Trees & Green Cover",
     1: "Parks & Open Spaces",
     2: "Water Bodies",
     3: "Roads & Footpaths",
+}
+
+# 7. Railway Model (Trained from Roboflow)
+RAILWAY_MAP = {
+    0: "Station Platforms",
+    1: "Railway Tracks",
 }
 
 # --- COLOR-BASED DETECTION (HSV fallback for categories without ML models) ---
@@ -69,6 +76,9 @@ CATEGORY_COLORS = {
     "Drains & Sewage": "#8E44AD",
     "Vehicles & Parking": "#F39C12",
     "Waste Dumps": "#7F8C8D",
+    "Railway Tracks": "#D35400",          # Dark Orange
+    "Station Platforms": "#8E44AD",       # Purple
+    "Trains & Rolling Stock": "#C0392B",  # Dark Red
 }
 
 
@@ -154,6 +164,17 @@ class AssetDetector:
                 "path": landcover_model_path,
             }
             print(f"  ✅ [ML] Land Cover (4 Classes)   → {landcover_model_path}")
+
+        # Railways
+        railways_model_path = models_dir / "railways.pt"
+        if railways_model_path.exists():
+            self.models["railways"] = {
+                "model": YOLO(str(railways_model_path)),
+                "map": RAILWAY_MAP,
+                "label": "Railway Tracks & Trains",
+                "path": railways_model_path,
+            }
+            print(f"  ✅ [ML] Railway Tracks & Trains  → {railways_model_path}")
 
         # ── Color Segmenter ──
         self.color_segmenter = ColorSegmenter()

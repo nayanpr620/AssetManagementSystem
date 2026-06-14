@@ -1,7 +1,7 @@
 """
-DIGIT Urban Governance Integration Service
+DIGIT Railway Governance Integration Service
 ============================================
-Persistent mock integration with the DIGIT Urban Asset Registry API.
+Persistent mock integration with the DIGIT Railway Asset Registry API.
 """
 import json
 import os
@@ -86,7 +86,7 @@ def push_to_digit(
     survey_date: str = None,
 ) -> Dict[str, Any]:
     """
-    Push detected assets to the persisted DIGIT Urban Asset Registry mock.
+    Push detected assets to the persisted DIGIT Railway Asset Registry mock.
     """
     if not survey_date:
         survey_date = datetime.utcnow().isoformat()
@@ -270,5 +270,8 @@ def _map_to_digit_category(category: str) -> str:
         "Drains & Sewage": "IMMOVABLE_DRAIN",
         "Vehicles & Parking": "MOVABLE_VEHICLE",
         "Waste Dumps": "IMMOVABLE_LAND_WASTE",
+        "Railway Tracks": "IMMOVABLE_RAILWAY_TRACK",
+        "Station Platforms": "IMMOVABLE_RAILWAY_PLATFORM",
+        "Trains & Rolling Stock": "MOVABLE_TRAIN",
     }
     return mapping.get(category, "IMMOVABLE_OTHER")

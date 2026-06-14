@@ -227,8 +227,8 @@ export default function App() {
     if (activeView === 'detect') {
       if (!detectionResult) {
         return {
-          kicker: 'Spatial Operations',
-          title: 'Spatial asset dashboard',
+          kicker: 'Railway Operations',
+          title: 'Railway intelligence dashboard',
           description: 'Upload one clean scene and route it through review, GIS, export, reporting, and DIGIT handoff from a calmer command center.',
         };
       }
@@ -429,8 +429,8 @@ export default function App() {
               <Sparkles size={18} />
             </div>
             <div>
-              <p className="dashboard-brand-kicker">GeoDetect</p>
-              <h1 className="dashboard-brand-title">Urban asset command</h1>
+              <p className="dashboard-brand-kicker">RailDetect</p>
+              <h1 className="dashboard-brand-title">Railway asset command</h1>
             </div>
           </div>
 
@@ -534,7 +534,7 @@ export default function App() {
                   <Layers size={16} />
                 </div>
                 <div>
-                  <p className="dashboard-profile-name">Urban Ops Desk</p>
+                  <p className="dashboard-profile-name">Railway Ops Desk</p>
                   <p className="dashboard-profile-meta">{renderedDate}</p>
                 </div>
               </div>
