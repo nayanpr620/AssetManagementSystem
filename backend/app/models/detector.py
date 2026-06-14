@@ -441,11 +441,15 @@ class AssetDetector:
                 return False
             if stats["is_blue"] or stats["is_green"]:
                 return False
-            if stats["value_mean"] > 245 and stats["saturation_mean"] < 12:
+            if stats["value_mean"] > 160 and stats["saturation_mean"] < 30:
+                # Reject sky/haze misclassified as tracks
                 return False
             return True
 
         if category == "Trains & Rolling Stock":
+            if det.get("confidence", 1.0) < 0.65:
+                # Reject low confidence YOLO detections to stop shadow/pole false positives
+                return False
             # Reject poles/shadows which are vertical (aspect < 0.6) or very dark
             if metrics["aspect"] < 0.8:
                 return False

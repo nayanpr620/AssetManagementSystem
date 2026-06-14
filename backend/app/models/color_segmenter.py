@@ -23,15 +23,15 @@ from app.utils.geo_utils import build_precise_geometry
 COLOR_PROFILES = {
     "Trees & Green Cover": {
         "ranges": [
-            (30, 35, 25, 85, 255, 220),   # Greens - broader for aerial vegetation
+            (30, 45, 45, 85, 255, 220),   # Raised saturation & value to avoid dark/desaturated gravel shadows
         ],
         "min_area": 300,       # Smaller to catch vegetation patches
         "color": "#2ECC71",
     },
     "Water Bodies": {
         "ranges": [
-            (90, 60, 30, 130, 255, 255),  # Blue - high saturation
-            (85, 70, 20, 140, 255, 200),  # Dark blue
+            (90, 80, 60, 130, 255, 255),  # Blue - high saturation, raised value to avoid shadows
+            (85, 80, 50, 140, 255, 200),  # Dark blue - raised sat and value
         ],
         "min_area": 800,      # Water bodies
         "color": "#3498DB",
@@ -48,11 +48,10 @@ COLOR_PROFILES = {
     },
     "Station Platforms": {
         "ranges": [
-            (15, 5, 180, 40, 60, 255),   # Light concrete/beige
-            (0, 0, 210, 180, 25, 255),   # Pale grey/white concrete
+            (15, 5, 180, 40, 60, 255),   # Light concrete/beige (warm tint only, avoids pure grey roads)
         ],
         "min_area": 5000,     # Larger - platforms are substantial
-        "color": "#E67E22",
+        "color": "#8E44AD",   # Fixed UX mismatch: changed from Orange to Purple to match UI
     },
 }
 
