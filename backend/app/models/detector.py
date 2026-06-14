@@ -136,7 +136,7 @@ def _region_stats(image_rgb, bbox, mask_polygon=None):
         shifted = contour.copy()
         shifted[:, 0, 0] -= px1
         shifted[:, 0, 1] -= py1
-        cv2.fillPoly(mask, [shifted], 255)
+        cv2.fillPoly(mask, [shifted.astype(np.int32)], 255)
     else:
         cv2.rectangle(mask, (0, 0), (px2 - px1, py2 - py1), 255, -1)
 
