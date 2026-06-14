@@ -23,33 +23,36 @@ from app.utils.geo_utils import build_precise_geometry
 COLOR_PROFILES = {
     "Trees & Green Cover": {
         "ranges": [
-            (30, 40, 30, 85, 255, 200),   # Medium-dark greens (trees/canopy)
+            (30, 35, 25, 85, 255, 220),   # Greens - broader for aerial vegetation
         ],
-        "min_area": 500,       # Trees are moderately sized
+        "min_area": 300,       # Smaller to catch vegetation patches
         "color": "#2ECC71",
     },
     "Water Bodies": {
         "ranges": [
-            (90, 80, 40, 130, 255, 255),  # Distinct Blue (requires high saturation, ignores grey tracks)
-            (85, 80, 30, 140, 255, 200),  # Dark deep blue
+            (90, 60, 30, 130, 255, 255),  # Blue - high saturation
+            (85, 70, 20, 140, 255, 200),  # Dark blue
         ],
-        "min_area": 1000,      # Water bodies are medium-large
+        "min_area": 800,      # Water bodies
         "color": "#3498DB",
     },
     "Railway Tracks": {
         "ranges": [
-            (0, 0, 20, 180, 80, 230),      # Broadened gray/brown/rust range for ballast and steel (allows more saturation and brightness variance)
+            (0, 0, 15, 20, 80, 240),      # Dark brown/rust
+            (15, 0, 15, 40, 90, 230),    # Brown ballast
+            (0, 0, 40, 20, 50, 180),     # Dark grey
+            (160, 0, 40, 180, 60, 200),   # Cool grey (wraps)
         ],
-        "min_area": 800,
-        "color": "#E67E22",    # Orange mask for tracks
+        "min_area": 400,      # Smaller to catch track segments
+        "color": "#E67E22",
     },
     "Station Platforms": {
         "ranges": [
-            (10, 10, 150, 30, 100, 255),   # Light concrete/yellowish pavement
-            (0, 0, 200, 180, 20, 255),     # White/very light grey concrete
+            (15, 5, 180, 40, 60, 255),   # Light concrete/beige
+            (0, 0, 210, 180, 25, 255),   # Pale grey/white concrete
         ],
-        "min_area": 2000,      # Platforms are large blocks
-        "color": "#E67E22",    # Orange mask for platforms
+        "min_area": 5000,     # Larger - platforms are substantial
+        "color": "#E67E22",
     },
 }
 
@@ -103,8 +106,13 @@ class ColorSegmenter:
                 combined_mask = cv2.bitwise_or(combined_mask, mask)
 
             # Morphological cleanup: remove noise, fill gaps
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-            combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel)
+            k_size = 11 if category == "Station Platforms" else 5
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_size, k_size))
+            if category == "Station Platforms":
+                # Extra closing for platforms to merge fragmented concrete blocks
+                combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+            else:
+                combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel)
             combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_OPEN, kernel)
 
             # Find contours
@@ -115,6 +123,14 @@ class ColorSegmenter:
             for contour in contours:
                 area = cv2.contourArea(contour)
                 if area < profile["min_area"]:
+                    continue
+
+                # Bounding box for aspect check
+                x, y, bw, bh = cv2.boundingRect(contour)
+                aspect = max(bw, bh) / max(1, min(bw, bh))
+
+                # Platforms should be compact, not elongated like tracks
+                if category == "Station Platforms" and aspect > 6.0:
                     continue
 
                 # Simplify polygon

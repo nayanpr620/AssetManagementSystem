@@ -139,12 +139,12 @@ class StreamProcessor:
             # Draw filled label background
             label = f"{category.split('&')[0].strip()} {conf:.0%}"
             font = cv2.FONT_HERSHEY_SIMPLEX
-            font_scale = 0.45
-            thickness = 1
+            font_scale = 0.6  # Increased from 0.45 for readability
+            thickness = 2     # Increased from 1
             (tw, th), _ = cv2.getTextSize(label, font, font_scale, thickness)
 
-            cv2.rectangle(annotated, (x1, y1 - th - 8), (x1 + tw + 6, y1), color, -1)
-            cv2.putText(annotated, label, (x1 + 3, y1 - 4), font, font_scale,
+            cv2.rectangle(annotated, (x1, y1 - th - 12), (x1 + tw + 6, y1), color, -1)
+            cv2.putText(annotated, label, (x1 + 3, y1 - 6), font, font_scale,
                         (255, 255, 255), thickness, cv2.LINE_AA)
 
             # Draw mask polygon if available
@@ -152,8 +152,9 @@ class StreamProcessor:
                 pts = np.array(det["mask_polygon"], dtype=np.int32).reshape((-1, 1, 2))
                 overlay = annotated.copy()
                 cv2.fillPoly(overlay, [pts], color)
-                cv2.addWeighted(overlay, 0.25, annotated, 0.75, 0, annotated)
-                cv2.polylines(annotated, [pts], True, color, 1)
+                # Alpha increased from 0.25 to 0.45 for better visibility on dark backgrounds
+                cv2.addWeighted(overlay, 0.45, annotated, 0.55, 0, annotated)
+                cv2.polylines(annotated, [pts], True, color, 2)
 
         return annotated
 

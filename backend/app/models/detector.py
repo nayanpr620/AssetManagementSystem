@@ -213,6 +213,8 @@ def _overlap_threshold(a, b):
     pair = {a, b}
     if "Railway Tracks" in pair and ("Water Bodies" in pair or "Drains & Sewage" in pair):
         return 0.35
+    if "Station Platforms" in pair and ("Properties & Buildings" in pair or "Roads & Footpaths" in pair):
+        return 0.20 # Reject overlapping platforms aggressively
     if "Railway Tracks" in pair:
         return 0.45
     if "Water Bodies" in pair and ("Roads & Footpaths" in pair or "Drains & Sewage" in pair):
@@ -431,11 +433,11 @@ class AssetDetector:
         stats = _region_stats(image_rgb, bbox, det.get("mask_polygon"))
 
         if category == "Railway Tracks":
-            if metrics["aspect"] < 2.6:
+            if metrics["aspect"] < 2.0:
                 return False
-            if metrics["min_side"] < 14:
+            if metrics["min_side"] < 12:
                 return False
-            if metrics["area_ratio"] > 0.82 and metrics["aspect"] < 7.0:
+            if metrics["area_ratio"] > 0.85 and metrics["aspect"] < 8.0:
                 return False
             if stats["is_blue"] or stats["is_green"]:
                 return False
@@ -443,14 +445,26 @@ class AssetDetector:
                 return False
             return True
 
+        if category == "Trains & Rolling Stock":
+            # Reject poles/shadows which are vertical (aspect < 0.6) or very dark
+            if metrics["aspect"] < 0.8:
+                return False
+            if metrics["area"] < 1500:
+                # Small noise likely not a train from high altitude
+                return False
+            if stats["value_mean"] < 40:
+                # Very dark pixels (shadows)
+                return False
+            return True
+
         if category == "Water Bodies":
-            if metrics["area"] < 1200:
+            if metrics["area"] < 600:
                 return False
             if not stats["is_blue"] and not (
-                85 <= stats["hue_mean"] <= 140 and stats["saturation_mean"] > 45
+                85 <= stats["hue_mean"] <= 140 and stats["saturation_mean"] > 40
             ):
                 return False
-            if metrics["aspect"] > 12 and metrics["area_ratio"] < 0.20:
+            if metrics["aspect"] > 12 and metrics["area_ratio"] < 0.18:
                 return False
             if metrics["area_ratio"] < 0.08 and metrics["aspect"] > 5:
                 return False
@@ -479,6 +493,11 @@ class AssetDetector:
 
         if category == "Station Platforms":
             if metrics["aspect"] > 6.0 and metrics["area_ratio"] < 0.35:
+                return False
+            # Check if platform is too dark or pure green/blue (likely ground/noise)
+            if stats["is_green"] or stats["is_blue"]:
+                return False
+            if stats["value_mean"] < 60:
                 return False
             return True
 
