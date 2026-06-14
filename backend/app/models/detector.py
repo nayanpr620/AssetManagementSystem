@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 from PIL import Image
+import cv2
+import numpy as np
 from ultralytics import YOLO
 
 from app.models.color_segmenter import ColorSegmenter
@@ -80,11 +82,144 @@ CATEGORY_COLORS = {
     "Drains & Sewage": "#8E44AD",
     "Vehicles & Parking": "#F39C12",
     "Waste Dumps": "#7F8C8D",
-    "Railway Tracks": "#D35400",          # Dark Orange
-    "Station Platforms": "#8E44AD",       # Purple
-    "Trains & Rolling Stock": "#C0392B",  # Dark Red
-    "Track Components & Defects": "#F1C40F", # Yellow
+    "Railway Tracks": "#D35400",
+    "Station Platforms": "#8E44AD",
+    "Trains & Rolling Stock": "#C0392B",
+    "Track Components & Defects": "#F1C40F",
 }
+
+
+def _bbox_metrics(bbox):
+    x1, y1, x2, y2 = [float(v) for v in bbox]
+    width = max(0.0, x2 - x1)
+    height = max(0.0, y2 - y1)
+    min_side = min(width, height)
+    max_side = max(width, height)
+    area = max(1.0, width * height)
+    return {
+        "width": width,
+        "height": height,
+        "area": area,
+        "aspect": max_side / max(1.0, min_side),
+        "min_side": min_side,
+        "max_side": max_side,
+        "area_ratio": 1.0,
+    }
+
+
+def _mask_polygon_to_contour(mask_polygon):
+    if not mask_polygon or len(mask_polygon) < 3:
+        return None
+    return np.array(mask_polygon, dtype=np.float32).reshape((-1, 1, 2))
+
+
+def _region_stats(image_rgb, bbox, mask_polygon=None):
+    height, width = image_rgb.shape[:2]
+    x1, y1, x2, y2 = [float(v) for v in bbox]
+    px1 = max(0, min(width - 1, int(round(x1))))
+    py1 = max(0, min(height - 1, int(round(y1))))
+    px2 = max(0, min(width, int(round(x2))))
+    py2 = max(0, min(height, int(round(y2))))
+    if px2 <= px1 or py2 <= py1:
+        return {
+            "saturation_mean": 0,
+            "value_mean": 0,
+            "hue_mean": 0,
+            "is_blue": False,
+            "is_green": False,
+            "is_grey": True,
+        }
+
+    mask = np.zeros((py2 - py1, px2 - px1), dtype=np.uint8)
+    contour = _mask_polygon_to_contour(mask_polygon)
+    if contour is not None:
+        shifted = contour.copy()
+        shifted[:, 0, 0] -= px1
+        shifted[:, 0, 1] -= py1
+        cv2.fillPoly(mask, [shifted], 255)
+    else:
+        cv2.rectangle(mask, (0, 0), (px2 - px1, py2 - py1), 255, -1)
+
+    roi_rgb = image_rgb[py1:py2, px1:px2]
+    roi_mask = mask > 0
+    roi_pixels = roi_rgb[roi_mask]
+    if roi_pixels.size == 0:
+        return {
+            "saturation_mean": 0,
+            "value_mean": 0,
+            "hue_mean": 0,
+            "is_blue": False,
+            "is_green": False,
+            "is_grey": True,
+        }
+
+    roi_hsv = cv2.cvtColor(roi_pixels.reshape(1, -1, 3), cv2.COLOR_RGB2HSV).reshape(-1, 3)
+    r, g, b = roi_pixels.mean(axis=0)
+    saturation_mean = float(roi_hsv[:, 1].mean())
+    value_mean = float(roi_hsv[:, 2].mean())
+    hue_mean = float(roi_hsv[:, 0].mean())
+
+    return {
+        "saturation_mean": saturation_mean,
+        "value_mean": value_mean,
+        "hue_mean": hue_mean,
+        "is_blue": bool(b > r + 15 and b > g + 5),
+        "is_green": bool(g > r + 15 and g > b + 5),
+        "is_grey": bool(saturation_mean < 55),
+    }
+
+
+def _intersection_area(a, b):
+    ax1, ay1, ax2, ay2 = [float(v) for v in a["bbox_pixels"]]
+    bx1, by1, bx2, by2 = [float(v) for v in b["bbox_pixels"]]
+    ix1 = max(ax1, bx1)
+    iy1 = max(ay1, by1)
+    ix2 = min(ax2, bx2)
+    iy2 = min(ay2, by2)
+    return max(0.0, ix2 - ix1) * max(0.0, iy2 - iy1)
+
+
+def _overlap_ratio(a, b):
+    inter = _intersection_area(a, b)
+    if inter <= 0:
+        return 0.0
+    a_area = _bbox_metrics(a["bbox_pixels"])["area"]
+    b_area = _bbox_metrics(b["bbox_pixels"])["area"]
+    return inter / max(1.0, min(a_area, b_area))
+
+
+def _conflicting_categories(a, b):
+    if a == b:
+        return False
+    railway = {
+        "Railway Tracks",
+        "Trains & Rolling Stock",
+        "Station Platforms",
+        "Track Components & Defects",
+    }
+    land_cover_noise = {"Water Bodies", "Drains & Sewage", "Roads & Footpaths"}
+    if (a in railway and b in land_cover_noise) or (b in railway and a in land_cover_noise):
+        return True
+    if {a, b} in [
+        {"Water Bodies", "Drains & Sewage"},
+        {"Water Bodies", "Roads & Footpaths"},
+        {"Drains & Sewage", "Roads & Footpaths"},
+    ]:
+        return True
+    return False
+
+
+def _overlap_threshold(a, b):
+    pair = {a, b}
+    if "Railway Tracks" in pair and ("Water Bodies" in pair or "Drains & Sewage" in pair):
+        return 0.35
+    if "Railway Tracks" in pair:
+        return 0.45
+    if "Water Bodies" in pair and ("Roads & Footpaths" in pair or "Drains & Sewage" in pair):
+        return 0.55
+    if "Drains & Sewage" in pair and "Roads & Footpaths" in pair:
+        return 0.65
+    return 0.75
 
 
 class AssetDetector:
@@ -173,8 +308,9 @@ class AssetDetector:
         # Trains (using highly-accurate official YOLOv8 segmentation)
         trains_model_path = models_dir / "yolov8m-seg.pt"
         try:
+            model = YOLO(str(trains_model_path)) if trains_model_path.exists() else YOLO("yolov8m-seg.pt")
             self.models["trains"] = {
-                "model": YOLO("yolov8m-seg.pt"),  # Ultralytics will auto-download this
+                "model": model,
                 "map": TRAIN_MAP,
                 "label": "Trains & Rolling Stock",
                 "path": trains_model_path,
@@ -249,6 +385,7 @@ class AssetDetector:
         Run detection on a PIL image using all available detectors.
         """
         all_detections = []
+        image_rgb = np.array(image)
 
         # ── Run each ML model ──
         for key, info in self.models.items():
@@ -272,46 +409,111 @@ class AssetDetector:
             )
             all_detections.extend(color_detections)
 
-        # ── SPATIAL EXCLUSION LOGIC (Resolve Overlaps) ──
-        # Do not let generic land cover (Water, Roads, Trees, Waste, Parks)
-        # overlap significantly with Railway Infrastructure (Tracks, Trains, Platforms, Defects)
-        railway_categories = {
-            "Railway Tracks", "Trains & Rolling Stock",
-            "Station Platforms", "Track Components & Defects"
-        }
-        
-        final_detections = []
-        railway_dets = [d for d in all_detections if d["category"] in railway_categories]
-        generic_dets = [d for d in all_detections if d["category"] not in railway_categories]
-        
-        final_detections.extend(railway_dets)
-        
-        for g_det in generic_dets:
-            gx1, gy1, gx2, gy2 = g_det["bbox_pixels"]
-            g_area = max(1, (gx2 - gx1) * (gy2 - gy1))
-            
-            overlap_violation = False
-            for r_det in railway_dets:
-                rx1, ry1, rx2, ry2 = r_det["bbox_pixels"]
-                
-                # Intersection area
-                ix1 = max(gx1, rx1)
-                iy1 = max(gy1, ry1)
-                ix2 = min(gx2, rx2)
-                iy2 = min(gy2, ry2)
-                
-                inter_area = max(0, ix2 - ix1) * max(0, iy2 - iy1)
-                overlap_ratio = inter_area / g_area
-                
-                # If generic box is overlapping a railway box by more than 20% of its own area
-                if overlap_ratio > 0.20:
-                    overlap_violation = True
-                    break
-            
-            if not overlap_violation:
-                final_detections.append(g_det)
+        filtered_detections = [
+            det for det in all_detections
+            if self._passes_detection_filter(det, image_rgb)
+        ]
+        final_detections = self._deduplicate_overlapping_noise(filtered_detections)
 
         return self._build_response(final_detections, image.size)
+
+    def _passes_detection_filter(self, det: Dict[str, Any], image_rgb: np.ndarray) -> bool:
+        category = det.get("category")
+        bbox = det.get("bbox_pixels")
+        if not bbox:
+            return True
+
+        metrics = _bbox_metrics(bbox)
+        contour = _mask_polygon_to_contour(det.get("mask_polygon"))
+        if contour is not None:
+            contour_area = float(cv2.contourArea(contour))
+            metrics["area_ratio"] = min(1.0, contour_area / max(1.0, metrics["area"]))
+        stats = _region_stats(image_rgb, bbox, det.get("mask_polygon"))
+
+        if category == "Railway Tracks":
+            if metrics["aspect"] < 2.6:
+                return False
+            if metrics["min_side"] < 14:
+                return False
+            if metrics["area_ratio"] > 0.82 and metrics["aspect"] < 7.0:
+                return False
+            if stats["is_blue"] or stats["is_green"]:
+                return False
+            if stats["value_mean"] > 245 and stats["saturation_mean"] < 12:
+                return False
+            return True
+
+        if category == "Water Bodies":
+            if metrics["area"] < 1200:
+                return False
+            if not stats["is_blue"] and not (
+                85 <= stats["hue_mean"] <= 140 and stats["saturation_mean"] > 45
+            ):
+                return False
+            if metrics["aspect"] > 12 and metrics["area_ratio"] < 0.20:
+                return False
+            if metrics["area_ratio"] < 0.08 and metrics["aspect"] > 5:
+                return False
+            return True
+
+        if category == "Drains & Sewage":
+            if metrics["aspect"] < 3.5:
+                return False
+            if metrics["area_ratio"] > 0.55:
+                return False
+            if stats["is_blue"] or stats["is_green"]:
+                return False
+            if stats["value_mean"] > 215:
+                return False
+            return True
+
+        if category == "Roads & Footpaths":
+            if (
+                metrics["aspect"] > 8.0
+                and metrics["area_ratio"] < 0.28
+                and stats["saturation_mean"] < 45
+                and stats["value_mean"] < 195
+            ):
+                det["confidence"] = max(0.0, det.get("confidence", 0) - 0.20)
+            return det.get("confidence", 0) >= 0.35
+
+        if category == "Station Platforms":
+            if metrics["aspect"] > 6.0 and metrics["area_ratio"] < 0.35:
+                return False
+            return True
+
+        return True
+
+    def _deduplicate_overlapping_noise(self, detections: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        priority = {
+            "Railway Tracks": 0,
+            "Track Components & Defects": 1,
+            "Trains & Rolling Stock": 2,
+            "Station Platforms": 3,
+            "Water Bodies": 4,
+            "Drains & Sewage": 5,
+            "Roads & Footpaths": 6,
+        }
+        ordered = sorted(
+            detections,
+            key=lambda det: (priority.get(det.get("category"), 99), -det.get("confidence", 0)),
+        )
+        kept: List[Dict[str, Any]] = []
+
+        for det in ordered:
+            category = det.get("category")
+            skip = False
+            for existing in kept:
+                existing_category = existing.get("category")
+                if not _conflicting_categories(category, existing_category):
+                    continue
+                if _overlap_ratio(det, existing) > _overlap_threshold(category, existing_category):
+                    skip = True
+                    break
+            if not skip:
+                kept.append(det)
+
+        return kept
 
     # ------------------------------------------------------------------
     # SAHI inference
@@ -361,6 +563,7 @@ class AssetDetector:
                 "pixel_area": pixel_area,
                 "color": CATEGORY_COLORS.get(category, "#FFFFFF"),
                 "mask_polygon": None,
+                "source": "ml",
             })
         return detections
 
@@ -411,6 +614,7 @@ class AssetDetector:
                 "pixel_area": pixel_area,
                 "color": CATEGORY_COLORS.get(category, "#FFFFFF"),
                 "mask_polygon": mask_polygon,
+                "source": "ml",
             })
         return detections
 

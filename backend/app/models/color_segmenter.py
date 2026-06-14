@@ -157,6 +157,7 @@ class ColorSegmenter:
                     "pixel_area": pixel_area,
                     "color": profile["color"],
                     "mask_polygon": mask_polygon,
+                    "source": "color_segmentation",
                 })
 
         return all_detections

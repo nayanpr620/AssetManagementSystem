@@ -55,6 +55,26 @@ export default function DetectionOverlay() {
   const MAX_RENDER = 500;
   const renderedDetections = activeDetections.slice(0, MAX_RENDER);
 
+  // Label deduplication: avoid overlapping labels
+  const labelCenters = [];
+  const getLabelCenter = (bbox, scale) => {
+    const [x1, y1] = bbox;
+    return {
+      x: x1 * scale + 20,
+      y: y1 * scale + 20,
+    };
+  };
+  const LABEL_MIN_DIST = 80;
+  const shouldShowLabel = (bbox, idx) => {
+    const center = getLabelCenter(bbox, scale);
+    for (const existing of labelCenters) {
+      const dist = Math.sqrt(Math.pow(center.x - existing.x, 2) + Math.pow(center.y - existing.y, 2));
+      if (dist < LABEL_MIN_DIST) return false;
+    }
+    labelCenters.push(center);
+    return true;
+  };
+
   return (
     <div ref={containerRef} className="detection-canvas-container relative w-full animate-fade-in">
       <Stage width={stageWidth} height={stageHeight}>
@@ -72,8 +92,8 @@ export default function DetectionOverlay() {
             const strokeWidth = 2; // Fixed stroke width
             const fillOpacity = isHovered ? '66' : '26'; // 40% (66 hex) vs 15% (26 hex)
 
-            // Only show labels for boxes large enough
-            const showLabel = w > 60 && h > 20;
+// Only show labels for boxes large enough (and not crowded)
+             const showLabel = w > 60 && h > 20 && shouldShowLabel(det.bbox_pixels, i);
             const labelText = w < 80 ? det.category : `${det.category} ${Math.round(det.confidence * 100)}%`;
 
             return (
