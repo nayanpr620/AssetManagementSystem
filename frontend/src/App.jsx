@@ -261,9 +261,7 @@ export default function App() {
         return [
           {
             label: 'Asset classes',
-            value: '08',
-            detail: 'Buildings, vegetation, roads, water, drains, vehicles, waste, and open space.',
-            accent: true,
+            detail: 'Buildings, vegetation, roads, water, railway tracks, station platforms, trains, and track defects.',
           },
           {
             label: 'Workspace pages',

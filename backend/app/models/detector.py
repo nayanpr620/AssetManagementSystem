@@ -272,7 +272,46 @@ class AssetDetector:
             )
             all_detections.extend(color_detections)
 
-        return self._build_response(all_detections, image.size)
+        # ── SPATIAL EXCLUSION LOGIC (Resolve Overlaps) ──
+        # Do not let generic land cover (Water, Roads, Trees, Waste, Parks)
+        # overlap significantly with Railway Infrastructure (Tracks, Trains, Platforms, Defects)
+        railway_categories = {
+            "Railway Tracks", "Trains & Rolling Stock",
+            "Station Platforms", "Track Components & Defects"
+        }
+        
+        final_detections = []
+        railway_dets = [d for d in all_detections if d["category"] in railway_categories]
+        generic_dets = [d for d in all_detections if d["category"] not in railway_categories]
+        
+        final_detections.extend(railway_dets)
+        
+        for g_det in generic_dets:
+            gx1, gy1, gx2, gy2 = g_det["bbox_pixels"]
+            g_area = max(1, (gx2 - gx1) * (gy2 - gy1))
+            
+            overlap_violation = False
+            for r_det in railway_dets:
+                rx1, ry1, rx2, ry2 = r_det["bbox_pixels"]
+                
+                # Intersection area
+                ix1 = max(gx1, rx1)
+                iy1 = max(gy1, ry1)
+                ix2 = min(gx2, rx2)
+                iy2 = min(gy2, ry2)
+                
+                inter_area = max(0, ix2 - ix1) * max(0, iy2 - iy1)
+                overlap_ratio = inter_area / g_area
+                
+                # If generic box is overlapping a railway box by more than 20% of its own area
+                if overlap_ratio > 0.20:
+                    overlap_violation = True
+                    break
+            
+            if not overlap_violation:
+                final_detections.append(g_det)
+
+        return self._build_response(final_detections, image.size)
 
     # ------------------------------------------------------------------
     # SAHI inference
