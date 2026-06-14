@@ -48,7 +48,6 @@ VEHICLE_MAP = {
     2: "Vehicles & Parking",   # car
     3: "Vehicles & Parking",   # motorcycle
     5: "Vehicles & Parking",   # bus
-    6: "Trains & Rolling Stock", # train (COCO class 6)
     7: "Vehicles & Parking",   # truck
 }
 
@@ -60,10 +59,15 @@ LANDCOVER_MAP = {
     3: "Roads & Footpaths",
 }
 
-# 7. Railway Model (Trained from Roboflow)
-RAILWAY_MAP = {
-    0: "Station Platforms",
-    1: "Railway Tracks",
+# 7. Trains Model (Pre-trained YOLOv8 for COCO class 6)
+TRAIN_MAP = {
+    6: "Trains & Rolling Stock",
+}
+
+# 8. Track Defects Model (HuggingFace: velocitatem/railway-image-processing)
+TRACK_DEFECTS_MAP = {
+    0: "Track Components & Defects", # clip
+    1: "Track Components & Defects", # sleeper
 }
 
 # --- COLOR-BASED DETECTION (HSV fallback for categories without ML models) ---
@@ -79,6 +83,7 @@ CATEGORY_COLORS = {
     "Railway Tracks": "#D35400",          # Dark Orange
     "Station Platforms": "#8E44AD",       # Purple
     "Trains & Rolling Stock": "#C0392B",  # Dark Red
+    "Track Components & Defects": "#F1C40F", # Yellow
 }
 
 
@@ -165,16 +170,29 @@ class AssetDetector:
             }
             print(f"  ✅ [ML] Land Cover (4 Classes)   → {landcover_model_path}")
 
-        # Railways
-        railways_model_path = models_dir / "railways.pt"
-        if railways_model_path.exists():
-            self.models["railways"] = {
-                "model": YOLO(str(railways_model_path)),
-                "map": RAILWAY_MAP,
-                "label": "Railway Tracks & Trains",
-                "path": railways_model_path,
+        # Trains (using highly-accurate official YOLOv8 segmentation)
+        trains_model_path = models_dir / "yolov8m-seg.pt"
+        try:
+            self.models["trains"] = {
+                "model": YOLO("yolov8m-seg.pt"),  # Ultralytics will auto-download this
+                "map": TRAIN_MAP,
+                "label": "Trains & Rolling Stock",
+                "path": trains_model_path,
             }
-            print(f"  ✅ [ML] Railway Tracks & Trains  → {railways_model_path}")
+            print(f"  ✅ [ML] Trains & Rolling Stock   → Auto-downloading/Loading yolov8m-seg.pt")
+        except Exception as e:
+            print(f"  ⚠️  [ML] Failed to load official trains model: {e}")
+
+        # Track Defects
+        track_defects_model_path = models_dir / "track_defects.pt"
+        if track_defects_model_path.exists():
+            self.models["track_defects"] = {
+                "model": YOLO(str(track_defects_model_path)),
+                "map": TRACK_DEFECTS_MAP,
+                "label": "Track Components & Defects",
+                "path": track_defects_model_path,
+            }
+            print(f"  ✅ [ML] Track Components         → {track_defects_model_path}")
 
         # ── Color Segmenter ──
         self.color_segmenter = ColorSegmenter()
@@ -183,11 +201,10 @@ class AssetDetector:
         # ML models for trees/roads were trained on ground-level data, not aerial,
         # so HSV color analysis is essential for satellite imagery detection.
         self.hsv_categories = [
-            "Parks & Open Spaces",
+            "Railway Tracks",
+            "Station Platforms",
             "Water Bodies",
-            "Drains & Sewage",
             "Trees & Green Cover",
-            "Roads & Footpaths",
         ]
 
         for cat in self.hsv_categories:

@@ -28,42 +28,30 @@ COLOR_PROFILES = {
         "min_area": 500,       # Trees are moderately sized
         "color": "#2ECC71",
     },
-    "Parks & Open Spaces": {
-        "ranges": [
-            (30, 20, 100, 85, 180, 255),   # Bright, lighter greens (grass/parks)
-        ],
-        "min_area": 5000,      # Parks are large open areas
-        "color": "#27AE60",
-    },
     "Water Bodies": {
         "ranges": [
-            (90, 30, 30, 130, 255, 255),   # Blue range (lakes, rivers, ponds)
-            (85, 40, 40, 140, 255, 200),   # Darker blue/teal (shadows on water)
+            (90, 100, 40, 130, 255, 255),  # Distinct Blue (requires high saturation, ignores grey tracks)
+            (85, 120, 30, 140, 255, 200),  # Dark deep blue
+            (40, 50, 20, 85, 255, 150),    # Murky/greenish natural water bodies
         ],
         "min_area": 1000,      # Water bodies are medium-large
         "color": "#3498DB",
     },
-    "Roads & Footpaths": {
+    "Railway Tracks": {
         "ranges": [
-            (0, 0, 120, 180, 40, 220),     # Grey/light concrete
+            (0, 0, 50, 180, 50, 150),      # Dark grey/steel channels (ballast and steel)
+            (0, 0, 100, 180, 40, 200),     # Lighter grey (sunlit tracks)
         ],
         "min_area": 800,
-        "color": "#95A5A6",
+        "color": "#8E44AD",    # Purple mask for tracks
     },
-    "Drains & Sewage": {
+    "Station Platforms": {
         "ranges": [
-            (0, 0, 50, 180, 50, 110),      # Dark grey channels
+            (10, 10, 150, 30, 100, 255),   # Light concrete/yellowish pavement
+            (0, 0, 200, 180, 20, 255),     # White/very light grey concrete
         ],
-        "min_area": 300,
-        "color": "#8E44AD",
-    },
-    "Waste Dumps": {
-        "ranges": [
-            (10, 30, 80, 25, 200, 200),    # Brown/tan irregular patches
-            (0, 20, 60, 15, 180, 180),     # Reddish-brown soil
-        ],
-        "min_area": 1500,
-        "color": "#7F8C8D",
+        "min_area": 2000,      # Platforms are large blocks
+        "color": "#E67E22",    # Orange mask for platforms
     },
 }
 

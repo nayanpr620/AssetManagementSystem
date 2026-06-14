@@ -171,9 +171,9 @@ export default function ImageUploader() {
 
           <div className="rounded-[28px] border border-emerald-200 bg-gradient-to-br from-emerald-900 via-brand-700 to-emerald-500 p-5 text-white shadow-[0_24px_50px_rgba(20,151,96,0.22)]">
             <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-emerald-100/80">Inference blend</p>
-            <p className="mt-2 text-sm font-semibold">5 model specialists + land-cover analysis</p>
+            <p className="mt-2 text-sm font-semibold">Railway ML Models + Smart Color Analysis</p>
             <p className="mt-2 text-xs leading-6 text-emerald-50/82">
-              Designed to catch structured urban assets and softer spatial cover types in one premium review surface.
+              Designed to catch rolling stock, track defects, and station infrastructure in one premium review surface.
             </p>
           </div>
         </div>

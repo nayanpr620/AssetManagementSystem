@@ -14,6 +14,7 @@ export const CATEGORY_COLORS = {
   'Railway Tracks':         '#E67E22',
   'Station Platforms':      '#8E44AD',
   'Trains & Rolling Stock': '#C0392B',
+  'Track Components & Defects': '#F1C40F',
 };
 
 export const CATEGORY_LABELS = {
@@ -28,6 +29,7 @@ export const CATEGORY_LABELS = {
   'Railway Tracks':         '🛤️ Tracks',
   'Station Platforms':      '🚉 Platforms',
   'Trains & Rolling Stock': '🚆 Trains',
+  'Track Components & Defects': '🔧 Defects',
 };
 
 export const CATEGORY_ICONS = {
@@ -42,6 +44,7 @@ export const CATEGORY_ICONS = {
   'Railway Tracks':         '🛤️',
   'Station Platforms':      '🚉',
   'Trains & Rolling Stock': '🚆',
+  'Track Components & Defects': '🔧',
 };
 
 /**
