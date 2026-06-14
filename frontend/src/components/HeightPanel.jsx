@@ -60,7 +60,7 @@ export default function HeightPanel() {
             <p className="text-2xl font-semibold tracking-[-0.04em] text-white">
               {heightResult.total_buildings}
             </p>
-            <p className="mt-2 text-xs leading-6 text-surface-200/66">
+            <p className="mt-2 text-xs leading-6 text-white/70">
               Estimates blend detected building footprints with shadow-derived heuristics.
             </p>
           </div>
@@ -76,7 +76,7 @@ export default function HeightPanel() {
                       </div>
                       <span className="text-xs font-semibold text-white">Building #{index + 1}</span>
                     </div>
-                    <span className="text-xs font-mono text-surface-300/58">
+                    <span className="text-xs font-mono text-white/60">
                       {Math.round(estimate.confidence * 100)}% conf
                     </span>
                   </div>
@@ -84,24 +84,24 @@ export default function HeightPanel() {
                   <div className="grid grid-cols-3 gap-2">
                     <div className="rounded-2xl border border-surface-700/18 bg-surface-900/60 p-2 text-center">
                       <p className="text-sm font-semibold text-white">{estimate.estimated_height_m}m</p>
-                      <p className="mt-1 text-[9px] uppercase tracking-[0.16em] text-surface-300/42">Height</p>
+                      <p className="mt-1 text-[9px] uppercase tracking-[0.16em] text-white/50">Height</p>
                     </div>
                     <div className="rounded-2xl border border-surface-700/18 bg-surface-900/60 p-2 text-center">
                       <p className="text-sm font-semibold text-brand-200">{estimate.floors_estimate}</p>
-                      <p className="mt-1 text-[9px] uppercase tracking-[0.16em] text-surface-300/42">Floors</p>
+                      <p className="mt-1 text-[9px] uppercase tracking-[0.16em] text-white/50">Floors</p>
                     </div>
                     <div className="rounded-2xl border border-surface-700/18 bg-surface-900/60 p-2 text-center">
                       <p className="text-[10px] font-semibold capitalize text-surface-100">
                         {estimate.estimation_method.replace('_', ' ')}
                       </p>
-                      <p className="mt-1 text-[9px] uppercase tracking-[0.16em] text-surface-300/42">Method</p>
+                      <p className="mt-1 text-[9px] uppercase tracking-[0.16em] text-white/50">Method</p>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="rounded-[20px] border border-surface-700/18 bg-white/[0.02] py-4 text-center text-xs text-surface-300/56">
+            <p className="rounded-[20px] border border-surface-700/18 bg-white/[0.02] py-4 text-center text-xs text-white/60">
               No buildings were detected strongly enough for height estimation in this scan.
             </p>
           )}
@@ -109,7 +109,7 @@ export default function HeightPanel() {
       )}
 
       {!uploadedImage && (
-        <p className="rounded-[20px] border border-surface-700/18 bg-white/[0.02] py-4 text-center text-xs text-surface-300/48">
+        <p className="rounded-[20px] border border-surface-700/18 bg-white/[0.02] py-4 text-center text-xs text-white/50">
           Upload imagery first to unlock height estimation.
         </p>
       )}

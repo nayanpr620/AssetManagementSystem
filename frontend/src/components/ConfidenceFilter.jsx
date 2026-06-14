@@ -38,7 +38,7 @@ export default function ConfidenceFilter() {
 
       <div className="metric-card mb-5">
         <div className="mb-3 flex items-center justify-between">
-          <label className="text-xs font-medium text-surface-200/78">Confidence threshold</label>
+          <label className="text-xs font-medium text-white/80">Confidence threshold</label>
           <span className="text-xs font-mono font-semibold text-brand-200">
             {Math.round(confidenceThreshold * 100)}%
           </span>
@@ -53,7 +53,7 @@ export default function ConfidenceFilter() {
           onChange={(event) => setConfidenceThreshold(parseFloat(event.target.value))}
           className="w-full"
         />
-        <div className="mt-2 flex justify-between text-[10px] uppercase tracking-[0.14em] text-surface-300/42">
+        <div className="mt-2 flex justify-between text-[10px] uppercase tracking-[0.14em] text-white/40">
           <span>20%</span>
           <span>60%</span>
           <span>100%</span>
@@ -62,7 +62,7 @@ export default function ConfidenceFilter() {
 
       <div>
         <div className="mb-3 flex items-center justify-between">
-          <label className="text-xs font-medium text-surface-200/78">Category visibility</label>
+          <label className="text-xs font-medium text-white/80">Category visibility</label>
           <button
             onClick={selectAllCategories}
             className="text-[10px] font-semibold uppercase tracking-[0.2em] text-brand-200 transition-colors hover:text-brand-100"

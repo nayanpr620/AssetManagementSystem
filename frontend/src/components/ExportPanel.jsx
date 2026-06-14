@@ -51,16 +51,16 @@ export default function ExportPanel() {
               </div>
               <div className="flex-1">
                 <p className="text-sm font-semibold text-white">{label}</p>
-                <p className="mt-1 text-[11px] leading-5 text-surface-300/64">{desc}</p>
+                <p className="mt-1 text-[11px] leading-5 text-white/60">{desc}</p>
               </div>
-              <Download size={14} className="mt-1 text-surface-300/46 transition-colors group-hover:text-brand-100" />
+              <Download size={14} className="mt-1 text-white/50 transition-colors group-hover:text-brand-100" />
             </div>
           </button>
         ))}
       </div>
 
       <div className="section-divider mt-4 pt-3">
-        <p className="text-[10px] text-surface-300/42 font-mono truncate">
+        <p className="text-[10px] text-white/40 font-mono truncate">
           Job reference: {jobId}
         </p>
       </div>

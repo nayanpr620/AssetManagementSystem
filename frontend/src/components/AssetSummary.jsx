@@ -44,7 +44,7 @@ export default function AssetSummary() {
             <p className="text-lg font-semibold text-white">
               {CATEGORY_LABELS[dominantCategory[0]] || dominantCategory[0]}
             </p>
-            <p className="mt-2 text-xs leading-6 text-surface-200/68">
+            <p className="mt-2 text-xs leading-6 text-white/70">
               Accounts for {dominantCategory[1].count} detections with an average confidence of{' '}
               {Math.round(dominantCategory[1].avg_confidence * 100)}%.
             </p>
@@ -52,7 +52,7 @@ export default function AssetSummary() {
           <div className="metric-card">
             <p className="panel-kicker mb-2">Coverage spread</p>
             <p className="text-lg font-semibold text-white">{visibleShare}%</p>
-            <p className="mt-2 text-xs leading-6 text-surface-200/68">
+            <p className="mt-2 text-xs leading-6 text-white/70">
               Distinct asset groups represented in the current scan.
             </p>
           </div>
@@ -70,12 +70,12 @@ export default function AssetSummary() {
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <span className="category-dot" style={{ backgroundColor: color }} />
-                  <span className="text-xs font-semibold text-surface-100">{label}</span>
+                  <span className="text-xs font-semibold text-white/90">{label}</span>
                 </div>
                 <div className="flex items-center gap-3 text-[11px]">
                   <span className="font-mono font-semibold text-white">{stats.count}</span>
                   {stats.total_area_sqm > 0 && (
-                    <span className="font-mono text-surface-300/70">
+                    <span className="font-mono text-white/70">
                       {stats.total_area_sqm.toLocaleString()} m²
                     </span>
                   )}
@@ -94,7 +94,7 @@ export default function AssetSummary() {
               </div>
 
               {stats.avg_confidence > 0 && (
-                <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-surface-300/48">
+                <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-white/50">
                   Average confidence {Math.round(stats.avg_confidence * 100)}%
                 </p>
               )}

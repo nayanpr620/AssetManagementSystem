@@ -30,20 +30,18 @@ COLOR_PROFILES = {
     },
     "Water Bodies": {
         "ranges": [
-            (90, 100, 40, 130, 255, 255),  # Distinct Blue (requires high saturation, ignores grey tracks)
-            (85, 120, 30, 140, 255, 200),  # Dark deep blue
-            (40, 50, 20, 85, 255, 150),    # Murky/greenish natural water bodies
+            (90, 80, 40, 130, 255, 255),  # Distinct Blue (requires high saturation, ignores grey tracks)
+            (85, 80, 30, 140, 255, 200),  # Dark deep blue
         ],
         "min_area": 1000,      # Water bodies are medium-large
         "color": "#3498DB",
     },
     "Railway Tracks": {
         "ranges": [
-            (0, 0, 50, 180, 50, 150),      # Dark grey/steel channels (ballast and steel)
-            (0, 0, 100, 180, 40, 200),     # Lighter grey (sunlit tracks)
+            (0, 0, 20, 180, 80, 230),      # Broadened gray/brown/rust range for ballast and steel (allows more saturation and brightness variance)
         ],
         "min_area": 800,
-        "color": "#8E44AD",    # Purple mask for tracks
+        "color": "#E67E22",    # Orange mask for tracks
     },
     "Station Platforms": {
         "ranges": [
