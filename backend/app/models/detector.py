@@ -72,6 +72,12 @@ TRACK_DEFECTS_MAP = {
     1: "Track Components & Defects", # sleeper
 }
 
+# 9. Railway Infrastructure Model — Tracks & Platforms (dedicated trained model)
+RAILWAY_MAP = {
+    0: "Station Platforms",
+    1: "Railway Tracks",
+}
+
 # --- COLOR-BASED DETECTION (HSV fallback for categories without ML models) ---
 CATEGORY_COLORS = {
     "Properties & Buildings": "#E74C3C",
@@ -307,6 +313,19 @@ class AssetDetector:
             }
             print(f"  ✅ [ML] Land Cover (4 Classes)   → {landcover_model_path}")
 
+        # Railway Infrastructure (dedicated model for tracks & platforms)
+        railways_model_path = models_dir / "railways.pt"
+        if railways_model_path.exists():
+            self.models["railways"] = {
+                "model": YOLO(str(railways_model_path)),
+                "map": RAILWAY_MAP,
+                "label": "Railway Tracks & Platforms",
+                "path": railways_model_path,
+            }
+            print(f"  ✅ [ML] Railway Tracks & Platforms → {railways_model_path}")
+        else:
+            print(f"  ⚠️  [ML] Railways model not found at {railways_model_path}")
+
         # Trains (using highly-accurate official YOLOv8 segmentation)
         trains_model_path = models_dir / "yolov8m-seg.pt"
         try:
@@ -339,8 +358,6 @@ class AssetDetector:
         # ML models for trees/roads were trained on ground-level data, not aerial,
         # so HSV color analysis is essential for satellite imagery detection.
         self.hsv_categories = [
-            "Railway Tracks",
-            "Station Platforms",
             "Water Bodies",
             "Trees & Green Cover",
         ]

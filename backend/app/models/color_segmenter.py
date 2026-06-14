@@ -36,23 +36,6 @@ COLOR_PROFILES = {
         "min_area": 800,      # Water bodies
         "color": "#3498DB",
     },
-    "Railway Tracks": {
-        "ranges": [
-            (0, 0, 15, 20, 80, 240),      # Dark brown/rust
-            (15, 0, 15, 40, 90, 230),    # Brown ballast
-            (0, 0, 40, 20, 50, 180),     # Dark grey
-            (160, 0, 40, 180, 60, 200),   # Cool grey (wraps)
-        ],
-        "min_area": 400,      # Smaller to catch track segments
-        "color": "#E67E22",
-    },
-    "Station Platforms": {
-        "ranges": [
-            (15, 5, 180, 40, 60, 255),   # Light concrete/beige (warm tint only, avoids pure grey roads)
-        ],
-        "min_area": 5000,     # Larger - platforms are substantial
-        "color": "#8E44AD",   # Fixed UX mismatch: changed from Orange to Purple to match UI
-    },
 }
 
 
@@ -105,17 +88,9 @@ class ColorSegmenter:
                 combined_mask = cv2.bitwise_or(combined_mask, mask)
 
             # Morphological cleanup: remove noise, fill gaps
-            k_size = 11 if category == "Station Platforms" else 5
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (k_size, k_size))
-            if category == "Station Platforms":
-                # Extra closing for platforms to merge fragmented concrete blocks
-                combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
-            else:
-                combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel)
-            
-            # Skip MORPH_OPEN for tracks because it erases thin steel rails and long continuous ballast
-            if category != "Railway Tracks":
-                combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_OPEN, kernel)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+            combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel)
+            combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_OPEN, kernel)
 
             # Find contours
             contours, _ = cv2.findContours(
@@ -129,11 +104,6 @@ class ColorSegmenter:
 
                 # Bounding box for aspect check
                 x, y, bw, bh = cv2.boundingRect(contour)
-                aspect = max(bw, bh) / max(1, min(bw, bh))
-
-                # Platforms should be compact, not elongated like tracks
-                if category == "Station Platforms" and aspect > 6.0:
-                    continue
 
                 # Simplify polygon
                 epsilon = 0.003 * cv2.arcLength(contour, True)
