@@ -197,7 +197,7 @@ def _conflicting_categories(a, b):
         "Station Platforms",
         "Track Components & Defects",
     }
-    land_cover_noise = {"Water Bodies", "Drains & Sewage", "Roads & Footpaths"}
+    land_cover_noise = {"Water Bodies", "Drains & Sewage", "Roads & Footpaths", "Properties & Buildings"}
     if (a in railway and b in land_cover_noise) or (b in railway and a in land_cover_noise):
         return True
     if {a, b} in [
@@ -214,7 +214,7 @@ def _overlap_threshold(a, b):
     if "Railway Tracks" in pair and ("Water Bodies" in pair or "Drains & Sewage" in pair):
         return 0.35
     if "Station Platforms" in pair and ("Properties & Buildings" in pair or "Roads & Footpaths" in pair):
-        return 0.20 # Reject overlapping platforms aggressively
+        return 0.10 # Reject overlapping platforms aggressively if they touch houses or roads
     if "Railway Tracks" in pair:
         return 0.45
     if "Water Bodies" in pair and ("Roads & Footpaths" in pair or "Drains & Sewage" in pair):
@@ -433,11 +433,12 @@ class AssetDetector:
         stats = _region_stats(image_rgb, bbox, det.get("mask_polygon"))
 
         if category == "Railway Tracks":
-            if metrics["aspect"] < 2.0:
+            # Tracks can be perfectly diagonal (aspect ~ 1.0) or thin straight lines (min_side ~ 0)
+            if metrics["aspect"] < 1.0:
                 return False
-            if metrics["min_side"] < 12:
+            if metrics["min_side"] < 2:
                 return False
-            if metrics["area_ratio"] > 0.85 and metrics["aspect"] < 8.0:
+            if metrics["area_ratio"] > 0.90 and metrics["aspect"] < 8.0:
                 return False
             if stats["is_blue"] or stats["is_green"]:
                 return False
@@ -512,10 +513,11 @@ class AssetDetector:
             "Railway Tracks": 0,
             "Track Components & Defects": 1,
             "Trains & Rolling Stock": 2,
-            "Station Platforms": 3,
-            "Water Bodies": 4,
-            "Drains & Sewage": 5,
-            "Roads & Footpaths": 6,
+            "Properties & Buildings": 3,
+            "Roads & Footpaths": 4,
+            "Station Platforms": 5,
+            "Water Bodies": 6,
+            "Drains & Sewage": 7,
         }
         ordered = sorted(
             detections,

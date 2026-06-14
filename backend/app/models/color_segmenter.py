@@ -112,7 +112,10 @@ class ColorSegmenter:
                 combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
             else:
                 combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_CLOSE, kernel)
-            combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_OPEN, kernel)
+            
+            # Skip MORPH_OPEN for tracks because it erases thin steel rails and long continuous ballast
+            if category != "Railway Tracks":
+                combined_mask = cv2.morphologyEx(combined_mask, cv2.MORPH_OPEN, kernel)
 
             # Find contours
             contours, _ = cv2.findContours(
